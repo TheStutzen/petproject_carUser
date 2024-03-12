@@ -1,17 +1,14 @@
 import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { UsersModule } from './users/users.module'
 import { CarModule } from './car/car.module'
 import { AuthModule } from './auth/auth.module'
-import { TypeOrmModule } from '@nestjs/typeorm'
-import { ConfigModule, ConfigService } from '@nestjs/config'
 
 @Module({
   imports: [
-    UsersModule, 
-    CarModule,
-    AuthModule,
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -22,11 +19,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [__dirname + '**/*.entity{.ts, .js'],
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
       }),
       inject: [ConfigService],
     }),
+    UsersModule,
+    CarModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
