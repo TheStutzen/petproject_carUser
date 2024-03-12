@@ -7,6 +7,6 @@ export class CreateUserDto {
     @IsPhoneNumber()
     phone: string
 
-    @MinLength(6, { message: 'Пароль меньше 6 символов '})
+    @MinLength(6, { message: 'Пароль меньше 6 символов'})
     password: string
 }
