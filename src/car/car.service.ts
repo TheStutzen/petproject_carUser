@@ -1,26 +1,79 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCarDto } from './dto/create-car.dto';
-import { UpdateCarDto } from './dto/update-car.dto';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { CreateCarDto } from './dto/create-car.dto'
+import { UpdateCarDto } from './dto/update-car.dto'
+import { Repository } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Car } from './entities/car.entity'
 
 @Injectable()
 export class CarService {
-  create(createCarDto: CreateCarDto) {
-    return 'This action adds a new car';
+  
+  constructor(
+    @InjectRepository(Car)
+    private readonly carRepository: Repository<Car>,
+  ) {}
+
+  async create(createCarDto: CreateCarDto, id: number) {
+    const isExist = await this.carRepository.findBy({
+      user: { id },
+      brand: createCarDto.brand,
+      model: createCarDto.model,
+      year: createCarDto.year,
+    })
+
+    if (isExist.length)
+      throw new BadRequestException('Данный автомобиль уже есть')
+
+      const newCar = {
+        brand: createCarDto.brand,
+        model: createCarDto.model,
+        year: createCarDto.year,
+        user: {
+          id,
+        },
+      }
+
+      return await this.carRepository.save(newCar)
   }
 
-  findAll() {
-    return `This action returns all car`;
+  async findAll(id: number) {
+    return await this.carRepository.find({
+      where: {
+        user: { id },
+      },
+    })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} car`;
+  async findOne(id: number) {
+    const car = await this.carRepository.findOne({
+      where: { id },
+      relations: {
+        user: true,
+      },
+    })
+
+    if (!car) throw new NotFoundException('Автомобиль не найдены')
+
+    return car
   }
 
-  update(id: number, updateCarDto: UpdateCarDto) {
-    return `This action updates a #${id} car`;
+  async update(id: number, updateCarDto: UpdateCarDto) {
+    const car = await this.carRepository.findOne({
+      where: { id },
+    })
+
+    if (!car) throw new NotFoundException('Автомобиль не найден')
+
+    return await this.carRepository.update(id, updateCarDto)
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} car`;
+  async remove(id: number) {
+    const car = await this.carRepository.findOne({
+      where: { id },
+    })
+    
+    if (!car) throw new NotFoundException('Автобиль не найден')
+
+    return await this.carRepository.delete(id)
   }
 }
