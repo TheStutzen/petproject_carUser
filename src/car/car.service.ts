@@ -76,4 +76,12 @@ export class CarService {
 
     return await this.carRepository.delete(id)
   }
+
+  async findUsersByCarBrand(brand: string): Promise<Car[]> {
+    return this.carRepository
+      .createQueryBuilder('car')
+      .leftJoinAndSelect('car.user', 'user')
+      .where('car.brand = :brand', { brand })
+      .getMany()
+  }
 }

@@ -3,6 +3,7 @@ import { CarService } from './car.service'
 import { CreateCarDto } from './dto/create-car.dto'
 import { UpdateCarDto } from './dto/update-car.dto'
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard'
+import { Car } from './entities/car.entity'
 
 @Controller('car')
 export class CarController {
@@ -40,5 +41,10 @@ export class CarController {
   @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.carService.remove(+id)
+  }
+
+  @Get('cars/:brand')
+  findUsersByCarBrand(@Param('brand') brand: string): Promise<Car[]> {
+    return this.carService.findUsersByCarBrand(brand)
   }
 }
